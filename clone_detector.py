@@ -4,10 +4,14 @@ from Python3Lexer import Python3Lexer
 import TokenTypes
 from collections import deque
 
-def generate_token_list(source_file, output_file=False):
-    # Returns list of tokens from source code
-    with open(source_file, 'r') as file:
-        source = file.read()
+def generate_token_list(source_file, output_tokens_as_file=False):
+    """Returns a list of tokens based on input source code.
+    
+    output_tokens_as_file -- Output list of tokens to file. Default value is False.
+    """
+
+    with open(source_file, 'r') as src:
+        source = src.read()
 
     input = InputStream(source)
     lexer = Python3Lexer(input)
@@ -16,32 +20,38 @@ def generate_token_list(source_file, output_file=False):
 
     res = []
 
-    if output_file:
-        file = open(f'{source_file}-tokenised.txt', 'w')
+    if output_tokens_as_file:
+        src = open(f'{source_file}-tokenised.txt', 'w')
 
     for i in range(len(tokens.tokens)):
         token = tokens.get(i)
         res.append(token)
 
-        if output_file:
-            file.write(f'{TokenTypes.token_types[token.type]} {token.text}\n')
+        if output_tokens_as_file:
+            src.write(f'{TokenTypes.token_types[token.type]} {token.text}\n')
 
-    if output_file:
-        file.close()
+    if output_tokens_as_file:
+        src.close()
 
     return res
 
 def print_token_list(token_list):
+    """Print a token list."""
+
     for token in token_list:
         print(f"({token.type}, {repr(token.text)})", end=' ')
     print()
 
 def isEqualToken(token1, token2):
+    """Returns True if both tokens are of the same type and same text value."""
+
     if token1.type == token2.type and token1.text == token2.text:
         return True
     return False
 
 def isType1Clone(list1, list2):
+    """Returns True if both token lists match as a Type 1 Clone."""
+
     m, n = len(list1), len(list2)
     if m != n:
         return False
@@ -53,23 +63,27 @@ def isType1Clone(list1, list2):
     return True
 
 def ignore_var_and_literals(token_list):
-        literals = [
-            3, # STRING
-            4 # NUMBER
-        ]
-        variables = [
-            42 # NAME
-        ]
+    """Return token list with literal values and variable names ignored."""
 
-        for t in token_list:
-            if t.type in literals:
-                t.text = "L"
-            elif t.type in variables:
-                t.text = "V"
+    literals = [
+        3, # STRING
+        4 # NUMBER
+    ]
+    variables = [
+        42 # NAME
+    ]
 
-        return token_list
+    for t in token_list:
+        if t.type in literals:
+            t.text = "L"
+        elif t.type in variables:
+            t.text = "V"
+
+    return token_list
 
 def isType2Clone(list1, list2):
+    """Returns True if both token lists match as a Type 2 Clone."""
+
     list1, list2 = ignore_var_and_literals(list1), ignore_var_and_literals(list2)
 
     m, n = len(list1), len(list2)
@@ -84,7 +98,11 @@ def isType2Clone(list1, list2):
     return True
 
 def lcs(list1, list2):
-    # Return length of lcs
+    """Obtain Longest Common Subsequence of two token lists.
+    
+    Returns (length of LCS, LCS token list of list1, LCS token list of list2)
+    """
+
     m, n = len(list1), len(list2)
     memo = [ [ (0, deque(), deque()) for _ in range(n+1) ] for _ in range(m+1) ]
             
@@ -113,6 +131,10 @@ def lcs(list1, list2):
     return memo[0][0]
 
 def isType3Clone(list1, list2, gap=5):
+    """Returns True if both token lists match as a Type 3 Clone.
+    
+    gap -- Ignore differences in token indexes that are less than this value. Default value is 5. 
+    """
     list1, list2 = ignore_var_and_literals(list1), ignore_var_and_literals(list2)
     lcs_len, lcs_tokens1, lcs_tokens2 = lcs(list1, list2)
     if lcs_len < 2:
@@ -129,6 +151,7 @@ def isType3Clone(list1, list2, gap=5):
 
     return True
 
+# Specify files of code fragments to analyse
 src1 = 'samples/matplotlib/sample3-1.py'
 src2 = 'samples/matplotlib/sample3-2.py'
 
@@ -144,5 +167,3 @@ print('LCS Length: ', result[0])
 print('Is Type 1 Clone: ', isType1Clone(tokens1, tokens2))
 print('Is Type 2 Clone: ', isType2Clone(tokens1, tokens2))
 print('Is Type 3 Clone: ', isType3Clone(tokens1, tokens2))
-
-# print_token_list(result[2])
