@@ -152,8 +152,8 @@ def isType3Clone(list1, list2, gap=5):
     return True
 
 # Specify files of code fragments to analyse
-src1 = 'samples/matplotlib/sample3-1.py'
-src2 = 'samples/matplotlib/sample3-2.py'
+src1 = 'samples/add_integer.py'
+src2 = 'samples/add_string.py'
 
 tokens1 = generate_token_list(src1)
 tokens2 = generate_token_list(src2)
